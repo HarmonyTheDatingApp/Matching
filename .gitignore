@@ -1,0 +1,8 @@
+.idea/
+venv/
+__pycache__/
+
+*.db
+*.mp3
+
+config.json
