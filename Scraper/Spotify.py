@@ -56,17 +56,29 @@ class Spotify:
                                       'Accept': 'application/json',
                                       'Content-Type': 'application/json'})
     
-    data = []
+    data = Spotify.__extract_playlist_data(res, [])
+    
+    while res['next']:
+      res = self.make_api_call('get', url=res['next'],
+                               headers={'Authorization': f'Bearer {self.access_token}',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'})
+      data = Spotify.__extract_playlist_data(res, data)
+    
+    return data
+  
+  @staticmethod
+  def __extract_playlist_data(res: Dict, data: List) -> List:
     for item in res['items']:
       item = item['track']
-      
+  
       artists = []
       for artist in item['artists']:
         artists.append({
           'name': artist['name'],
           'id': artist['id']
         })
-      
+  
       data.append({
         'name': item['name'],
         'popularity': item['popularity'],
