@@ -66,7 +66,23 @@ class Spotify:
       data = Spotify.__extract_playlist_data(res, data)
     
     return data
-  
+
+  def download_preview(self, track_id: str, preview_url: str, file_name: str = None, verbose: bool = False):
+    if verbose:
+      print(f"Downloading {track_id}...")
+    res = self.make_api_call('get', url=preview_url, stream=True)
+    
+    if not os.path.exists("previews"):
+      os.makedirs("previews")
+    
+    if file_name is None:
+      file_name = f"previews/{track_id}.mp3"
+    
+    if verbose:
+      print(f"Saving {track_id}")
+    with open(file_name, 'wb') as f:
+      f.write(res.content)
+
   @staticmethod
   def __extract_playlist_data(res: Dict, data: List) -> List:
     for item in res['items']:
