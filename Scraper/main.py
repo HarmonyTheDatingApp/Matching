@@ -1,5 +1,5 @@
-from PopulatePlaylists import populate_playlist_tracks, save_to_database, DatabaseManager
-from TransformAudio import map_previews_to_file
+from Scraper.PopulatePlaylists import populate_playlist_tracks, save_to_database, DatabaseManager
+from Scraper.TransformAudio import map_previews_to_file
 
 if __name__ == '__main__':
   map_previews_to_file(limit=1000, offset=3500)

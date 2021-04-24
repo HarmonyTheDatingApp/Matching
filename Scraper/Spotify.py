@@ -70,7 +70,7 @@ class Spotify:
   def download_preview(self, track_id: str, preview_url: str, file_name: str = None, verbose: bool = False):
     if verbose:
       print(f"Downloading {track_id}...")
-    res = self.make_api_call('get', url=preview_url, stream=True)
+    res = requests.get(preview_url, stream=True)
     
     if not os.path.exists("previews"):
       os.makedirs("previews")

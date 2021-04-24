@@ -2,7 +2,7 @@ import json
 import os
 import sqlite3
 from typing import Dict, List
-from Spotify import Spotify
+from Scraper.Spotify import Spotify
 
 
 class DatabaseManager:
@@ -64,10 +64,7 @@ def save_to_database(db_client, table_name, tracks, playlist_id):
       ':'.join(artist['name'] for artist in track['artists']),
       ':'.join(artist['id'] for artist in track['artists'])
     ]
-    # single_query = f"SELECT '{track['name']}' AS 'name', {track['popularity']} AS 'popularity', {track['duration_ms']}" \
-    #                f" AS 'duration_ms', '{track['id']}' AS 'id', '{track['preview_url']}' AS 'preview_url'," \
-    #                f"'{':'.join(artist['name'] for artist in track['artists'])}' AS 'artists_name'," \
-    #                f"'{':'.join(artist['id'] for artist in track['artists'])}' AS 'artists_id'"
+    
     if i == 0:
       insert_query = f"{insert_query}\n{single_query}"
     else:
