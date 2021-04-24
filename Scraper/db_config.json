@@ -2,5 +2,6 @@
   "db_name": "Playlist.db",
   "table": {
     "name": "Songs"
-  }
+  },
+  "spec": true
 }

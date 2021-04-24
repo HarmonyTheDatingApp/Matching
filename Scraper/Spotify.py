@@ -56,17 +56,45 @@ class Spotify:
                                       'Accept': 'application/json',
                                       'Content-Type': 'application/json'})
     
-    data = []
+    data = Spotify.__extract_playlist_data(res, [])
+    
+    while res['next']:
+      res = self.make_api_call('get', url=res['next'],
+                               headers={'Authorization': f'Bearer {self.access_token}',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'})
+      data = Spotify.__extract_playlist_data(res, data)
+    
+    return data
+
+  def download_preview(self, track_id: str, preview_url: str, file_name: str = None, verbose: bool = False):
+    if verbose:
+      print(f"Downloading {track_id}...")
+    res = requests.get(preview_url, stream=True)
+    
+    if not os.path.exists("previews"):
+      os.makedirs("previews")
+    
+    if file_name is None:
+      file_name = f"previews/{track_id}.mp3"
+    
+    if verbose:
+      print(f"Saving {track_id}")
+    with open(file_name, 'wb') as f:
+      f.write(res.content)
+
+  @staticmethod
+  def __extract_playlist_data(res: Dict, data: List) -> List:
     for item in res['items']:
       item = item['track']
-      
+  
       artists = []
       for artist in item['artists']:
         artists.append({
           'name': artist['name'],
           'id': artist['id']
         })
-      
+  
       data.append({
         'name': item['name'],
         'popularity': item['popularity'],

@@ -1,8 +1,10 @@
 .idea/
 venv/
 __pycache__/
+previews/
 
 *.db
 *.mp3
+*.log
 
 config.json
