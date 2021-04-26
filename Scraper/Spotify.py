@@ -2,6 +2,7 @@ import json
 import base64
 import requests
 import os
+import logging
 from typing import Dict, List
 
 
@@ -13,6 +14,7 @@ def get_config():
 
 class Spotify:
   BASE_URL = "https://api.spotify.com"
+  logging.basicConfig(filename='Spotify.log')
   
   def __init__(self):
     self.config = get_config()
@@ -79,8 +81,9 @@ class Spotify:
     features = Spotify.audio_features_list()
     data = []
     
-    for item in res['audio_features']:
+    for i, item in enumerate(res['audio_features']):
       if item is None:
+        logging.warning(f"{track_ids[i]} does not have audio features. Omitted.")
         continue
       track_features = {}
       for feature in features:
