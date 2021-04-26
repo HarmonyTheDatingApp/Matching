@@ -76,16 +76,21 @@ class Spotify:
                              },
                              params={'ids': ','.join(track_ids)})
     
-    features = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
-                  'instrumentalness', 'liveness', 'valence', 'tempo']
+    features = Spotify.audio_features_list()
     data = []
     
     for item in res['audio_features']:
+      if item is None:
+        continue
       track_features = {}
       for feature in features:
         track_features[feature] = item[feature]
       
       if normalize:
+        """
+        Normalizes loudness (assumed range: 0 - -60) and tempo (assumed range: 50 - 200).
+        Hardmax/Hardmin if values out of range.
+        """
         x = track_features['loudness']
         x = max(min(x, 0), -60) / (-60)
         track_features['loudness'] = round(x, 4)
@@ -95,8 +100,6 @@ class Spotify:
         track_features['tempo'] = round(x, 4)
       
       data.append(track_features)
-    
-    
     
     return data
   
@@ -122,3 +125,8 @@ class Spotify:
       })
     
     return data
+
+  @staticmethod
+  def audio_features_list():
+    return ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+                  'instrumentalness', 'liveness', 'valence', 'tempo']
