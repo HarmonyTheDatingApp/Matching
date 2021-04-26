@@ -67,6 +67,39 @@ class Spotify:
     
     return data
   
+  def get_audio_features(self, track_ids: List[str], normalize: bool = False) -> List[Dict]:
+    res = self.make_api_call('get', url=f"{Spotify.BASE_URL}/v1/audio-features",
+                             headers={
+                               'Authorization': f'Bearer {self.access_token}',
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             params={'ids': ','.join(track_ids)})
+    
+    features = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+                  'instrumentalness', 'liveness', 'valence', 'tempo']
+    data = []
+    
+    for item in res['audio_features']:
+      track_features = {}
+      for feature in features:
+        track_features[feature] = item[feature]
+      
+      if normalize:
+        x = track_features['loudness']
+        x = max(min(x, 0), -60) / (-60)
+        track_features['loudness'] = round(x, 4)
+        
+        x = track_features['tempo']
+        x = (max(min(x, 200), 50) - 50) / (200 - 50)
+        track_features['tempo'] = round(x, 4)
+      
+      data.append(track_features)
+    
+    
+    
+    return data
+  
   @staticmethod
   def __extract_playlist_data(res: Dict, data: List) -> List:
     for item in res['items']:
