@@ -4,5 +4,6 @@ __pycache__/
 
 *.db
 *.mp3
+*.log
 
 config.json

@@ -2,6 +2,7 @@ import json
 import base64
 import requests
 import os
+import logging
 from typing import Dict, List
 
 
@@ -13,6 +14,7 @@ def get_config():
 
 class Spotify:
   BASE_URL = "https://api.spotify.com"
+  logging.basicConfig(filename='Spotify.log')
   
   def __init__(self):
     self.config = get_config()
@@ -56,17 +58,66 @@ class Spotify:
                                       'Accept': 'application/json',
                                       'Content-Type': 'application/json'})
     
+    data = Spotify.__extract_playlist_data(res, [])
+    
+    while res['next']:
+      res = self.make_api_call('get', url=res['next'],
+                               headers={'Authorization': f'Bearer {self.access_token}',
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'})
+      data = Spotify.__extract_playlist_data(res, data)
+    
+    return data
+  
+  def get_audio_features(self, track_ids: List[str], normalize: bool = False) -> List[Dict]:
+    res = self.make_api_call('get', url=f"{Spotify.BASE_URL}/v1/audio-features",
+                             headers={
+                               'Authorization': f'Bearer {self.access_token}',
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             params={'ids': ','.join(track_ids)})
+    
+    features = Spotify.audio_features_list()
     data = []
+    
+    for i, item in enumerate(res['audio_features']):
+      if item is None:
+        logging.warning(f"{track_ids[i]} does not have audio features. Omitted.")
+        continue
+      track_features = {}
+      for feature in features:
+        track_features[feature] = item[feature]
+      
+      if normalize:
+        """
+        Normalizes loudness (assumed range: 0 - -60) and tempo (assumed range: 50 - 200).
+        Hardmax/Hardmin if values out of range.
+        """
+        x = track_features['loudness']
+        x = max(min(x, 0), -60) / (-60)
+        track_features['loudness'] = round(x, 4)
+        
+        x = track_features['tempo']
+        x = (max(min(x, 200), 50) - 50) / (200 - 50)
+        track_features['tempo'] = round(x, 4)
+      
+      data.append(track_features)
+    
+    return data
+  
+  @staticmethod
+  def __extract_playlist_data(res: Dict, data: List) -> List:
     for item in res['items']:
       item = item['track']
-      
+  
       artists = []
       for artist in item['artists']:
         artists.append({
           'name': artist['name'],
           'id': artist['id']
         })
-      
+  
       data.append({
         'name': item['name'],
         'popularity': item['popularity'],
@@ -77,3 +128,8 @@ class Spotify:
       })
     
     return data
+
+  @staticmethod
+  def audio_features_list():
+    return ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+                  'instrumentalness', 'liveness', 'valence', 'tempo']
